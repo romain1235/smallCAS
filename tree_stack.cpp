@@ -58,4 +58,76 @@ void TreeStack::deleteTree(Tree *tree){
         }
     }
 }
+Tree * TreeStack::pushBlock(uint8_t block){
+    if (size>=bufferSize){return nullptr;}
+    buffer[size++]=block;
+    return Tree::fromBlock(buffer+size-1);
+}
+Tree * TreeStack::pushSmallInt(uint8_t value, bool neg){
+    if (size+2>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(neg?Type::NegSmallInt:Type::PosSmallInt));
+    pushBlock(value);
+    return tree;
+}
+Tree * TreeStack::pushBigInt(uint8_t * digits, uint8_t nDigit, bool neg){
+    if (size+2+nDigit>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(neg?Type::NegBigInt:Type::PosBigInt));
+    pushBlock(nDigit);
+    for (uint8_t i = 0; i<nDigit; i++){
+        pushBlock(digits[i]);
+    }
+    return tree;
+}
+Tree * TreeStack::pushSmallRational(uint8_t numerator, uint8_t denominator, bool neg){
+    if (size+3>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(neg?Type::NegSmallRational:Type::PosSmallRational));
+    pushBlock(numerator);
+    pushBlock(denominator);
+    return tree;
+}
+Tree * TreeStack::pushBigRational(uint8_t * digits, uint8_t nNumeratorDigit, uint8_t nDenominatorDigit, bool neg){
+    if (size+3+nNumeratorDigit+nDenominatorDigit>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(neg?Type::NegBigRational:Type::PosBigRational));
+    pushBlock(nNumeratorDigit);
+    pushBlock(nDenominatorDigit);
+    for (uint16_t i = 0; i<nNumeratorDigit+nDenominatorDigit; i++){
+        pushBlock(digits[i]);
+    }
+    return tree;
+}
+Tree * TreeStack::pushSymbol(const char * name, uint8_t nChar){
+    if (size+2+nChar>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(Type::Symbol));
+    pushBlock(nChar);
+    for (uint8_t i = 0; i<nChar; i++){
+        pushBlock(name[i]);
+    }
+    return tree;
+}
+Tree * TreeStack::pushDiv(){
+    return pushBlock(static_cast<uint8_t>(Type::Div));
+}
+Tree * TreeStack::pushPow(){
+    return pushBlock(static_cast<uint8_t>(Type::Pow));    
+}
+Tree * TreeStack::pushMul(uint8_t nChildren){
+    if (size+2>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(Type::Mul));
+    pushBlock(nChildren);
+    return tree;
+}
+Tree * TreeStack::pushAdd(uint8_t nChildren){
+    if (size+2>bufferSize){return nullptr;}
+    Tree * tree = pushBlock(static_cast<uint8_t>(Type::Add));
+    pushBlock(nChildren);
+    return tree;
+}
+Tree * TreeStack::pushTree(Tree * tree){
+    uint32_t treeSize = tree->treeSize();
+    if (size+treeSize>bufferSize){return nullptr;}
+    Tree * newTree = Tree::fromBlock(buffer+size);
+    memcpy(buffer+size, tree, treeSize);
+    size+=treeSize;
+    return newTree;
+}
 }
