@@ -1,12 +1,13 @@
 #pragma once
 #include <cstdint>
+#include "type.hpp"
 
 namespace scas {
 
 class Tree{
 public:
-    uint16_t headerSize(){return 1;};//test
-    uint8_t numberOfChildren(){return 1;};//test
+    uint16_t headerSize();
+    uint8_t numberOfChildren();
     Tree * nextNode();
     Tree * nextTree();
     uint32_t treeSize();
@@ -14,5 +15,14 @@ public:
     static Tree * fromBlock(uint8_t * b) {
         return reinterpret_cast<Tree *>(b);
     }
+
+    SmallInt * asSmallInt(){return reinterpret_cast<SmallInt *>(this);}
+    BigInt * asBigInt(){return reinterpret_cast<BigInt *>(this);}
+    SmallRational * asSmallRational(){return reinterpret_cast<SmallRational *>(this);}
+    BigRational * asBigRational(){return reinterpret_cast<BigRational *>(this);}
+    Symbol * asSymbol(){return reinterpret_cast<Symbol *>(this);}
+    NAry * asNAry(){return reinterpret_cast<NAry *>(this);}
+
+    Type type() {return static_cast<Type>(block()[0]);}
 };
 }
