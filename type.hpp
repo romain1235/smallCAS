@@ -14,9 +14,12 @@ enum class Type: uint8_t{
     NegBigRational,
     Mul,
     Add,
+    Sub,
     Pow,
     Div,
     Symbol,
+    Opposite,
+    Parentheses,
 };
 
 struct SmallInt{

@@ -31,10 +31,14 @@ uint8_t Tree::numberOfChildren(){
     switch (type()) {
         case Type::Div:
         case Type::Pow:
+        case Type::Sub:
             return 2;
         case Type::Mul:
         case Type::Add:
             return asNAry()->nChildren;
+        case Type::Opposite:
+        case Type::Parentheses:
+            return 1;
         default:
             return 0;
     }
