@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include <cstdint>
 #include <iostream>
+#include <ostream>
 #include <string>
 
 uint8_t buffer[1024*1024];
@@ -85,12 +86,15 @@ void serializeTree(scas::Tree * tree, std::string & output){
 }
 
 int main() {
-    std::string text;
-    std::getline(std::cin, text);
-    scas::TreeStack stack(buffer,1024*1024);
-    scas::Tree * outputTree = scas::parse(&stack, text.c_str());
-    std::string output;
-    serializeTree(outputTree, output);
-    std::cout << output << std::endl;
+    while (true){
+        std::string text;
+        std::getline(std::cin, text);
+        scas::TreeStack stack(buffer,1024*1024);
+        scas::Tree * outputTree = scas::parse(&stack, text.c_str());
+        std::string output;
+        serializeTree(outputTree, output);
+        std::cout << "tree: " << output << std::endl;
+        std::cout << "tree size: " << outputTree->treeSize() << std::endl;
+    }
     return 0;
 }
