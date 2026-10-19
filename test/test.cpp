@@ -1,10 +1,16 @@
+#include "tree.hpp"
+#include "k_tree.hpp"
 #include "parser.hpp"
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <ostream>
 #include <string>
 
 uint8_t buffer[1024*1024];
+
+using namespace scas;
+
 
 void serializeTree(scas::Tree * tree, std::string & output){
     if (tree == nullptr){
@@ -85,16 +91,73 @@ void serializeTree(scas::Tree * tree, std::string & output){
     output+=")";
 }
 
+struct serializeTest{
+    Tree * tree;
+    const char * expectedOutput;
+};
+
+serializeTest kSerializeTest[] = {
+    {KSymbol<'x'>, "x"},
+    {KSymbol<'x','2'>, "x2"},
+    {KSmallInt<245>, "245"},
+    {KSmallInt<0>, "0"},
+    {KNegSmallInt<245>, "-245"},
+    {KBigInt<255,255>, "65535"},
+    {KBigInt<254,255>, "65534"},
+    {KNegBigInt<255,255>, "-65535"},
+    {KMul(KSmallInt<245>,KSymbol<'x'>), "245x"},
+    {KMul(KSymbol<'x'>,KSmallInt<245>), "x*245"},
+    {KMul(KAdd(KSymbol<'x'>,KSymbol<'x'>),KAdd(KSymbol<'x'>,KSymbol<'x'>)),"(x+x)(x+x)"},
+    {KAdd(KOpposite(KSmallInt<5>),KSmallInt<5>),"-5+5"},
+    {KMul(KOpposite(KSmallInt<5>),KSmallInt<5>),"(-5)5"},
+    {KOpposite(KMul(KSmallInt<5>,KSmallInt<5>)),"-5*5"},
+    {KAdd(KSmallInt<5>,KOpposite(KSmallInt<5>)),"5+(-5)"},
+    {KAdd(KSmallInt<5>,KMul(KOpposite(KSmallInt<5>),KSmallInt<5>)),"5+(-5)5"},
+};
+
+constexpr int KNumberOfSerializeTest = sizeof(kSerializeTest)/sizeof(serializeTest);
+
+struct parseTest{
+    const char * input;
+    Tree * tree;
+};
+
+parseTest kParseTest[] = {
+    {"-5*-5", KOpposite(KMul(KSmallInt<5>,KOpposite(KSmallInt<5>)))},
+};
+
+constexpr int KNumberOfParseTest = sizeof(kParseTest)/sizeof(parseTest);
+
+bool sameTree(Tree * a, Tree * b){
+    uint32_t n = a->treeSize();
+    return n==b->treeSize() && std::memcmp(a->block(), b->block(), n)==0;
+}
+
 int main() {
-    while (true){
-        std::string text;
-        std::getline(std::cin, text);
-        scas::TreeStack stack(buffer,1024*1024);
-        scas::Tree * outputTree = scas::parse(&stack, text.c_str());
+    for (int i = 0; i<KNumberOfSerializeTest; i++){
+        char out[1024];
+        kSerializeTest[i].tree->serialize(out, 1024);
         std::string output;
-        serializeTree(outputTree, output);
-        std::cout << "tree: " << output << std::endl;
-        std::cout << "tree size: " << outputTree->treeSize() << std::endl;
+        serializeTree(kSerializeTest[i].tree, output);
+        if (std::strcmp(out, kSerializeTest[i].expectedOutput)==0){
+            std::cout << output << " -> " << out << std::endl; 
+        }else{
+            std::cout << "\033[31m" << output << " made " << out << " expected " << kSerializeTest[i].expectedOutput << "\033[0m" << std::endl;
+        }
+    }
+    TreeStack stack(buffer, sizeof(buffer));
+    for (int i = 0; i<KNumberOfParseTest; i++){
+        stack.trimTo(0);
+        Tree * got = parse(&stack, kParseTest[i].input);
+        std::string output;
+        serializeTree(got, output);
+        if (got!=nullptr && sameTree(got, kParseTest[i].tree)){
+            std::cout << kParseTest[i].input << " -> " << output << std::endl;
+        }else{
+            std::string expected;
+            serializeTree(kParseTest[i].tree, expected);
+            std::cout << "\033[31m" << kParseTest[i].input << " made " << output << " expected " << expected << "\033[0m" << std::endl;
+        }
     }
     return 0;
 }

@@ -14,12 +14,12 @@ public:
         uint32_t mark = stack->size;
         Tree * add = stack->pushAdd(0);
         if (add == nullptr){return nullptr;}
-        Tree * first = pushMulAndDiv();
+        Tree * first = pushUnary(true);
         if (first == nullptr){return nullptr;}
         uint8_t nChildren = 1;
         while (true){
             if (eat('+')){
-                if (pushMulAndDiv()==nullptr){return nullptr;}
+                if (pushUnary(true)==nullptr){return nullptr;}
                 nChildren++;
             }else if(eat('-')){
                 if (nChildren>1){
@@ -29,7 +29,7 @@ public:
                     if (stack->keepOnly(mark+3, first)==nullptr){return nullptr;}
                 }
                 stack->buffer[mark+2]=static_cast<uint8_t>(Type::Sub);
-                if (pushMulAndDiv()==nullptr){return nullptr;}
+                if (pushUnary(true)==nullptr){return nullptr;}
                 nChildren=1;
             }else{
                 if (nChildren==1){
@@ -53,16 +53,34 @@ public:
                 return true;
         }
     }
+    Tree * pushUnary(bool mul){
+        bool neg = false;
+        while (true){
+            if (eat('+')){
+                continue;
+            }else if(eat('-')){
+                neg=!neg;
+            }else{
+                if (neg){
+                    Tree * opposite = stack->pushNode(Type::Opposite);
+                    if (opposite==nullptr){return nullptr;}
+                    if ((mul?pushMulAndDiv():pushPow())==nullptr){return nullptr;}
+                    return opposite;
+                }
+                return mul?pushMulAndDiv():pushPow();
+            }
+        }
+    }
     Tree * pushMulAndDiv(){
         uint32_t mark = stack->size;
         Tree * mul = stack->pushMul(0);
         if (mul == nullptr){return nullptr;}
-        Tree * first = pushUnary();
+        Tree * first = pushPow();
         if (first == nullptr){return nullptr;}
         uint8_t nChildren = 1;
         while (true){
             if (eat('*') || canJuxtapose()){
-                if (pushUnary()==nullptr){return nullptr;}
+                if (pushUnary(false)==nullptr){return nullptr;}
                 nChildren++;
             }else if(eat('/')){
                 if (nChildren>1){
@@ -72,7 +90,7 @@ public:
                     if (stack->keepOnly(mark+3, first)==nullptr){return nullptr;}
                 }
                 stack->buffer[mark+2]=static_cast<uint8_t>(Type::Div);
-                if (pushUnary()==nullptr){return nullptr;}
+                if (pushUnary(false)==nullptr){return nullptr;}
                 nChildren=1;
             }else{
                 if (nChildren==1){
@@ -84,24 +102,6 @@ public:
             }
         }
     }
-    Tree * pushUnary(){
-        bool neg = false;
-        while (true){
-            if (eat('+')){
-                continue;
-            }else if(eat('-')){
-                neg=!neg;
-            }else{
-                if (neg){
-                    Tree * opposite = stack->pushNode(Type::Opposite);
-                    if (opposite==nullptr){return nullptr;}
-                    if (pushPow()==nullptr){return nullptr;}
-                    return opposite;
-                }
-                return pushPow();
-            }
-        }
-    }
     Tree * pushPow(){
         uint32_t mark = stack->size;
         Tree * pow = stack->pushNode(Type::Pow);
@@ -109,7 +109,7 @@ public:
         Tree * base = pushPrimary();
         if (base==nullptr){return nullptr;}
         if (eat('^')){
-            if (pushUnary()==nullptr){return nullptr;}
+            if (pushUnary(false)==nullptr){return nullptr;}
             return pow;
         }else{
             return stack->keepOnly(mark, base);

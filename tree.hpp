@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include "type.hpp"
+#include "serialize.hpp"
 
 namespace scas {
 
@@ -24,5 +25,10 @@ public:
     NAry * asNAry(){return reinterpret_cast<NAry *>(this);}
 
     Type type() {return static_cast<Type>(block()[0]);}
+    void serialize(char * out, uint16_t size);//in serialize.cpp
+    LayoutShape layoutShape(bool left, bool layout/*if we are serializing in a layout*/);//in serialize.cpp
+    bool hasParentheses(uint8_t parentPriority);//in serialize.cpp
+private:
+    void serialize(char * out, uint16_t size, uint16_t & p);//in serialize.cpp
 };
 }
