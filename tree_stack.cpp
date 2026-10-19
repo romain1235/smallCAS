@@ -55,15 +55,9 @@ Tree * TreeStack::pushSymbol(const char * name, uint8_t nChar){
 Tree * TreeStack::pushNode(Type type){
     return pushBlock(static_cast<uint8_t>(type));
 }
-Tree * TreeStack::pushMul(uint8_t nChildren){
+Tree * TreeStack::pushNAry(Type type, uint8_t nChildren){
     if (size+2>bufferSize){return nullptr;}
-    Tree * tree = pushBlock(static_cast<uint8_t>(Type::Mul));
-    pushBlock(nChildren);
-    return tree;
-}
-Tree * TreeStack::pushAdd(uint8_t nChildren){
-    if (size+2>bufferSize){return nullptr;}
-    Tree * tree = pushBlock(static_cast<uint8_t>(Type::Add));
+    Tree * tree = pushBlock(static_cast<uint8_t>(type));
     pushBlock(nChildren);
     return tree;
 }

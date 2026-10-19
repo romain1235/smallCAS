@@ -5,6 +5,8 @@
 
 namespace scas {
 
+class TreeStack;
+
 class Tree{
 public:
     uint16_t headerSize();
@@ -25,9 +27,12 @@ public:
     NAry * asNAry(){return reinterpret_cast<NAry *>(this);}
 
     Type type() {return static_cast<Type>(block()[0]);}
+
     void serialize(char * out, uint16_t size);//in serialize.cpp
     LayoutShape layoutShape(bool left, bool layout/*if we are serializing in a layout*/);//in serialize.cpp
     bool hasParentheses(uint8_t parentPriority);//in serialize.cpp
+
+    Tree * project(TreeStack * stack);//in projection.cpp
 private:
     void serialize(char * out, uint16_t size, uint16_t & p);//in serialize.cpp
 };

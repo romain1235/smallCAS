@@ -12,7 +12,7 @@ public:
     TreeStack * stack;
     Tree * pushAdd(){
         uint32_t mark = stack->size;
-        Tree * add = stack->pushAdd(0);
+        Tree * add = stack->pushNAry(Type::Add, 0);
         if (add == nullptr){return nullptr;}
         Tree * first = pushUnary(true);
         if (first == nullptr){return nullptr;}
@@ -73,7 +73,7 @@ public:
     }
     Tree * pushMulAndDiv(){
         uint32_t mark = stack->size;
-        Tree * mul = stack->pushMul(0);
+        Tree * mul = stack->pushNAry(Type::Mul, 0);
         if (mul == nullptr){return nullptr;}
         Tree * first = pushPow();
         if (first == nullptr){return nullptr;}

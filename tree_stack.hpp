@@ -18,8 +18,7 @@ public:
     Tree * pushBigRational(uint8_t * digits, uint8_t nNumeratorDigit, uint8_t nDenominatorDigit, bool neg);
     Tree * pushSymbol(const char * name, uint8_t nChar);
     Tree * pushNode(Type type);
-    Tree * pushMul(uint8_t nChildren);
-    Tree * pushAdd(uint8_t nChildren);
+    Tree * pushNAry(Type type, uint8_t nChildren);
     Tree * pushTree(Tree * tree);
     Tree * keepOnly(uint32_t mark, Tree * result);
     void trimTo(uint32_t mark);
