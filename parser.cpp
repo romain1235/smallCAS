@@ -1,5 +1,7 @@
 #pragma once
 #include "parser.hpp"
+#include "checkpoint.hpp"
+#include <csetjmp>
 #include <cstdint>
 
 namespace scas {
@@ -8,28 +10,26 @@ namespace{
 
 class Parser{
 public:
-    const char * p;
+    const char * volatile p;
     TreeStack * stack;
     Tree * pushAdd(){
         uint32_t mark = stack->size;
         Tree * add = stack->pushNAry(Type::Add, 0);
-        if (add == nullptr){return nullptr;}
         Tree * first = pushUnary(true);
-        if (first == nullptr){return nullptr;}
         uint8_t nChildren = 1;
         while (true){
             if (eat('+')){
-                if (pushUnary(true)==nullptr){return nullptr;}
+                pushUnary(true);
                 nChildren++;
             }else if(eat('-')){
                 if (nChildren>1){
                     add->asNAry()->nChildren=nChildren;
-                    if (stack->keepOnly(mark+3, add)==nullptr){return nullptr;};
+                    stack->keepOnly(mark+3, add);
                 }else{
-                    if (stack->keepOnly(mark+3, first)==nullptr){return nullptr;}
+                    stack->keepOnly(mark+3, first);
                 }
                 stack->buffer[mark+2]=static_cast<uint8_t>(Type::Sub);
-                if (pushUnary(true)==nullptr){return nullptr;}
+                pushUnary(true);
                 nChildren=1;
             }else{
                 if (nChildren==1){
@@ -63,8 +63,7 @@ public:
             }else{
                 if (neg){
                     Tree * opposite = stack->pushNode(Type::Opposite);
-                    if (opposite==nullptr){return nullptr;}
-                    if ((mul?pushMulAndDiv():pushPow())==nullptr){return nullptr;}
+                    mul?pushMulAndDiv():pushPow();
                     return opposite;
                 }
                 return mul?pushMulAndDiv():pushPow();
@@ -74,23 +73,21 @@ public:
     Tree * pushMulAndDiv(){
         uint32_t mark = stack->size;
         Tree * mul = stack->pushNAry(Type::Mul, 0);
-        if (mul == nullptr){return nullptr;}
         Tree * first = pushPow();
-        if (first == nullptr){return nullptr;}
         uint8_t nChildren = 1;
         while (true){
             if (eat('*') || canJuxtapose()){
-                if (pushUnary(false)==nullptr){return nullptr;}
+                pushUnary(false);
                 nChildren++;
             }else if(eat('/')){
                 if (nChildren>1){
                     mul->asNAry()->nChildren=nChildren;
-                    if (stack->keepOnly(mark+3, mul)==nullptr){return nullptr;};
+                    stack->keepOnly(mark+3, mul);
                 }else{
-                    if (stack->keepOnly(mark+3, first)==nullptr){return nullptr;}
+                    stack->keepOnly(mark+3, first);
                 }
                 stack->buffer[mark+2]=static_cast<uint8_t>(Type::Div);
-                if (pushUnary(false)==nullptr){return nullptr;}
+                pushUnary(false);
                 nChildren=1;
             }else{
                 if (nChildren==1){
@@ -105,11 +102,9 @@ public:
     Tree * pushPow(){
         uint32_t mark = stack->size;
         Tree * pow = stack->pushNode(Type::Pow);
-        if (pow==nullptr){return nullptr;}
         Tree * base = pushPrimary();
-        if (base==nullptr){return nullptr;}
         if (eat('^')){
-            if (pushUnary(false)==nullptr){return nullptr;}
+            pushUnary(false);
             return pow;
         }else{
             return stack->keepOnly(mark, base);
@@ -118,11 +113,11 @@ public:
     Tree * pushPrimary(){
         if (eat('(')){
             Tree * parentheses = stack->pushNode(Type::Parentheses);
-            if (pushAdd()==nullptr){return nullptr;}
+            pushAdd();
             if (eat(')')){
                 return parentheses;
             }
-            return nullptr;
+            Checkpoint::raise(Error::SyntaxError, static_cast<uint8_t>(SyntaxError::MissingParenthesis));
         }
         if (*p>='0'&&*p<='9'){
             return pushNumber();
@@ -130,7 +125,7 @@ public:
         if ((*p>='a'&&*p<='z')||(*p>='A'&&*p<='Z')){
             return pushSymbol();
         }
-        return nullptr;
+        Checkpoint::raise(Error::SyntaxError, static_cast<uint8_t>(SyntaxError::IncompleteExpression));
     }
     Tree * pushNumber(){
         uint32_t mark = stack->size;
@@ -144,7 +139,7 @@ public:
                 carry=nextValue>>8;
             }
             while (carry!=0){
-                if(stack->pushBlock(carry)==nullptr){return nullptr;}
+                stack->pushBlock(carry);
                 nDigit++;
                 carry>>=8;
             }
@@ -165,10 +160,9 @@ public:
     }
     Tree * pushSymbol(){
         Tree * symbol = stack->pushSymbol(nullptr, 0);
-        if (symbol==nullptr){return nullptr;}
         uint8_t nChar = 0;
         while ((*p>='a'&&*p<='z')||(*p>='A'&&*p<='Z')||(*p>='0'&&*p<='9')){
-            if (stack->pushBlock(*(p++))==nullptr){return nullptr;}
+            stack->pushBlock(*(p++));
             nChar++;
         }
         symbol->asSymbol()->nChar = nChar;
@@ -190,18 +184,26 @@ public:
 
 }
 
-Tree * parse(TreeStack * stack, const char * text){
+ParseReturn parse(TreeStack * stack, const char * text){
     uint32_t mark = stack->size;
     Parser parser;
     parser.stack = stack;
     parser.p = text;
-    Tree * result = parser.pushAdd();
-    parser.skip();
-    if (result == nullptr || *parser.p!='\0'){
-        stack->trimTo(mark);
-        return nullptr;
+    Checkpoint checkpoint(stack);
+    if (setjmp(checkpoint.env)==0){
+        Tree * result = parser.pushAdd();
+        parser.skip();
+        if (*parser.p!='\0'){
+            Checkpoint::raise(Error::SyntaxError, static_cast<uint8_t>(SyntaxError::IncompleteExpression));
+        }
+        return {result, SyntaxError::None, nullptr};
+    }else{
+        if (Checkpoint::error == Error::SyntaxError){
+            return {nullptr, static_cast<SyntaxError>(Checkpoint::data), parser.p};
+        }else{
+            Checkpoint::raise(Checkpoint::error);
+        }
     }
-    return result;
 }
 
 }
