@@ -60,5 +60,12 @@ Tree * Tree::nextTree(){
 uint32_t Tree::treeSize(){
     return nextTree()->block()-block();
 }
+Tree * Tree::child(uint8_t index){
+    Tree * c = nextNode();
+    for (uint8_t i = 0; i < index; i++) {
+        c = c->nextTree();
+    }
+    return c;
+}
 
 }

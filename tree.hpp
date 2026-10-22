@@ -13,6 +13,7 @@ public:
     uint8_t numberOfChildren();
     Tree * nextNode();
     Tree * nextTree();
+    Tree * child(uint8_t index);
     uint32_t treeSize();
     uint8_t * block(){return reinterpret_cast<uint8_t *>(this);}
     static Tree * fromBlock(uint8_t * b) {
@@ -33,6 +34,7 @@ public:
     bool hasParentheses(uint8_t parentPriority);//in serialize.cpp
 
     Tree * project(TreeStack * stack);//in projection.cpp
+    Tree * simpleReduction(TreeStack * stack);//in simple_reduction.cpp
 private:
     void serialize(char * out, uint16_t size, uint16_t & p);//in serialize.cpp
 };

@@ -19,7 +19,7 @@ Tree * TreeStack::pushSmallInt(uint8_t value, bool neg){
     pushBlock(value);
     return tree;
 }
-Tree * TreeStack::pushBigInt(uint8_t * digits, uint8_t nDigit, bool neg){
+Tree * TreeStack::pushBigInt(const uint8_t * digits, uint8_t nDigit, bool neg){
     Tree * tree = pushBlock(static_cast<uint8_t>(neg?Type::NegBigInt:Type::PosBigInt));
     pushBlock(nDigit);
     for (uint8_t i = 0; i<nDigit; i++){
@@ -33,7 +33,7 @@ Tree * TreeStack::pushSmallRational(uint8_t numerator, uint8_t denominator, bool
     pushBlock(denominator);
     return tree;
 }
-Tree * TreeStack::pushBigRational(uint8_t * digits, uint8_t nNumeratorDigit, uint8_t nDenominatorDigit, bool neg){
+Tree * TreeStack::pushBigRational(const uint8_t * digits, uint8_t nNumeratorDigit, uint8_t nDenominatorDigit, bool neg){
     Tree * tree = pushBlock(static_cast<uint8_t>(neg?Type::NegBigRational:Type::PosBigRational));
     pushBlock(nNumeratorDigit);
     pushBlock(nDenominatorDigit);
