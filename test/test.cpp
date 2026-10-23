@@ -77,6 +77,9 @@ void serializeTree(scas::Tree * tree, std::string & output){
         case scas::Type::Parentheses:
             output+="Parentheses(";
             break;
+        case scas::Type::Undef:
+            output+="Undef(";
+            break;
         case scas::Type::Symbol:
             output+="Symbol(";
             output.append(tree->asSymbol()->name, tree->asSymbol()->nChar);

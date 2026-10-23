@@ -1,5 +1,6 @@
 #include "tree.hpp"
 #include <cstdint>
+#include <cstring>
 
 namespace scas {
 
@@ -25,6 +26,39 @@ uint16_t Tree::headerSize(){
         default:
             return 1;
     };    
+}
+
+bool Tree::isIdenticalTo(Tree * other){
+    uint32_t n = treeSize();
+    return n==other->treeSize() && memcmp(block(), other->block(), n)==0;
+}
+
+bool Tree::isNumber(){
+    switch (type()) {
+        case Type::PosSmallInt:
+        case Type::NegSmallInt:
+        case Type::PosBigInt:
+        case Type::NegBigInt:
+        case Type::PosSmallRational:
+        case Type::NegSmallRational:
+        case Type::PosBigRational:
+        case Type::NegBigRational:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool Tree::isInteger(){
+    switch (type()) {
+        case Type::PosSmallInt:
+        case Type::NegSmallInt:
+        case Type::PosBigInt:
+        case Type::NegBigInt:
+            return true;
+        default:
+            return false;
+    }
 }
 
 uint8_t Tree::numberOfChildren(){

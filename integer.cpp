@@ -56,6 +56,23 @@ Tree * pushShifted(Integer x, uint8_t shift, TreeStack * stack){
     return result;
 }
 
+Tree * pushHalved(Integer x, TreeStack * stack){
+    uint32_t mark = stack->size;
+    Tree * result = stack->pushBigInt(nullptr, 0, false);
+    for (uint8_t i = 0; i<x.nDigit; i++){
+        stack->pushBlock(0);
+    }
+    result->asBigInt()->nDigit = x.nDigit;
+    uint8_t * digits = result->asBigInt()->digits;
+    uint8_t carry = 0;
+    for (int16_t i = x.nDigit-1; i>=0; i--){
+        uint8_t cur = x.digits[i];
+        digits[i] = (cur>>1) | carry;
+        carry = (cur & 1)<<7;
+    }
+    return simplifyInteger(result, mark, stack);
+}
+
 }
 
 Integer::Integer(const uint8_t * digits, uint8_t nDigit, bool neg)
@@ -315,5 +332,38 @@ int8_t Integer::absCompare(Integer a, Integer b){
     }else{
         return a.nDigit<b.nDigit?-1:1;
     }
+}
+Tree * Integer::pow(Integer base, Integer exp, TreeStack *stack){
+    if (exp.nDigit==1 && exp.digits[0]==0){
+        assert(!(base.nDigit==1 && base.digits[0]==0));
+        return stack->pushSmallInt(1, false);
+    }
+    uint32_t mark = stack->size;
+    Tree * i1 = stack->pushSmallInt(1, false);
+    Tree * i2 = base.nDigit==1
+        ? stack->pushSmallInt(base.digits[0], base.neg)
+        : stack->pushBigInt(base.digits, base.nDigit, base.neg);
+    Tree * e = exp.nDigit==1
+        ? stack->pushSmallInt(exp.digits[0], false)
+        : stack->pushBigInt(exp.digits, exp.nDigit, false);
+    while (!(e->type()==Type::PosSmallInt && e->asSmallInt()->value==1)){
+        bool odd = Integer(e).digits[0] & 1;
+        Tree * next1 = i1;
+        if (odd){
+            next1 = mul(Integer(i1), Integer(i2), stack);
+        }
+        Tree * next2 = mul(Integer(i2), Integer(i2), stack);
+        Tree * nextE = pushHalved(Integer(e), stack);
+        uint32_t n1 = next1->treeSize();
+        uint32_t n2 = next2->treeSize();
+        uint32_t nE = nextE->treeSize();
+        memmove(stack->buffer+mark, next1->block(), n1);
+        memmove(stack->buffer+mark+n1, next2->block(), n2+nE);
+        stack->size = mark+n1+n2+nE;
+        i1 = Tree::fromBlock(stack->buffer+mark);
+        i2 = Tree::fromBlock(stack->buffer+mark+n1);
+        e = Tree::fromBlock(stack->buffer+mark+n1+n2);
+    }
+    return stack->keepOnly(mark, mul(Integer(i1), Integer(i2), stack));
 }
 }

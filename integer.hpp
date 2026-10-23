@@ -30,6 +30,7 @@ public:
     static DivResult absDiv(Integer a, Integer b, TreeStack * stack);
     static Tree * gcd(Integer a, Integer b, TreeStack * stack);
     static int8_t absCompare(Integer a, Integer b);
+    static Tree * pow(Integer base, Integer exp, TreeStack * stack);
 };
 
 }

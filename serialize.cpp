@@ -35,6 +35,7 @@ LayoutShape Tree::layoutShape(bool left, bool layout){
         case Type::Parentheses:
             return LayoutShape::Layout;
         case Type::Symbol:
+        case Type::Undef:
             return LayoutShape::Letters;
         case Type::NegBigInt:
         case Type::PosBigInt:
@@ -136,6 +137,13 @@ void Tree::serialize(char * out, uint16_t size, uint16_t & p){
                 pushChar(out, size, p, asSymbol()->name[i]);
             }
             break;
+        case Type::Undef:{
+            const char text[] = "undef";
+            for (uint8_t i = 0; i<sizeof(text)-1; i++){
+                pushChar(out, size, p, text[i]);
+            }
+            break;
+        }
         case Type::NegBigInt:
         case Type::PosBigInt:
             if (type()==Type::NegBigInt){pushChar(out, size, p, '-');}

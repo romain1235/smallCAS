@@ -28,6 +28,9 @@ public:
     NAry * asNAry(){return reinterpret_cast<NAry *>(this);}
 
     Type type() {return static_cast<Type>(block()[0]);}
+    bool isNumber();
+    bool isInteger();
+    bool isIdenticalTo(Tree * other);
 
     void serialize(char * out, uint16_t size);//in serialize.cpp
     LayoutShape layoutShape(bool left, bool layout/*if we are serializing in a layout*/);//in serialize.cpp

@@ -28,6 +28,7 @@ public:
     static Tree * add(Rational a, Rational b, TreeStack * stack);
     static Tree * mul(Rational a, Rational b, TreeStack * stack);
     static Tree * div(Rational a, Rational b, TreeStack * stack);
+    static Tree * pow(Rational base, Integer exp, TreeStack * stack);
 };
 
 }

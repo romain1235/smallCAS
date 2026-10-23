@@ -1,4 +1,5 @@
 #include "rational.hpp"
+#include "k_tree.hpp"
 #include <cstdint>
 
 namespace scas {
@@ -172,5 +173,16 @@ Tree * Rational::div(Rational a, Rational b, TreeStack *stack){
     return stack->keepOnly(mark, fromInts(numerator, denominator, stack));
 }
 
-
+Tree * Rational::pow(Rational base, Integer exp, TreeStack *stack){
+    uint32_t mark = stack->size;
+    RationalInts baseInts = base.toInts();
+    Tree * result = stack->keepOnly(mark, fromInts(
+        Integer::pow(baseInts.numerator, exp, stack), 
+        Integer::pow(baseInts.denominator, exp, stack), 
+        stack));
+    if (exp.neg){
+        result = stack->keepOnly(mark, Rational::div(Rational(KSmallInt<1>), result, stack));
+    }
+    return result;
+}
 }

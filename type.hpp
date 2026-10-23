@@ -20,6 +20,7 @@ enum class Type: uint8_t{
     Symbol,
     Opposite,
     Parentheses,
+    Undef,
 };
 
 struct SmallInt{

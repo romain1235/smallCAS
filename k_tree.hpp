@@ -65,6 +65,7 @@ constexpr KTree<static_cast<uint8_t>(Type::NegBigInt), static_cast<uint8_t>(size
 template<char... chars>
 constexpr KTree<static_cast<uint8_t>(Type::Symbol), static_cast<uint8_t>(sizeof...(chars)), static_cast<uint8_t>(chars)...> KSymbol{};
 
+constexpr KTree<static_cast<uint8_t>(Type::Undef)> KUndef{};
 constexpr KUnary<Type::Opposite> KOpposite{};
 constexpr KUnary<Type::Parentheses> KParentheses{};
 constexpr KBinary<Type::Sub> KSub{};
