@@ -1,3 +1,6 @@
+// Copyright (C) 2026 Romain Nardi
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "tree.hpp"
 #include "tree_stack.hpp"
 #include <cstdint>
