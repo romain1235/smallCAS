@@ -151,7 +151,7 @@ int main() {
     TreeStack stack(buffer, sizeof(buffer));
     for (int i = 0; i<KNumberOfParseTest; i++){
         stack.trimTo(0);
-        Tree * got = parse(&stack, kParseTest[i].input);
+        Tree * got = parse(&stack, kParseTest[i].input).result;
         std::string output;
         serializeTree(got, output);
         if (got!=nullptr && sameTree(got, kParseTest[i].tree)){
