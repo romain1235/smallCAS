@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-std=c++17, -I/home/romain-nardi/Documents/numworks/smallCAS]
+  Add: [-std=c++17, -I/home/romain-nardi/Documents/numworks/smallCAS/smallCAS]
