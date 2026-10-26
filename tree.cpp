@@ -61,6 +61,18 @@ bool Tree::isInteger(){
     }
 }
 
+bool Tree::isNeg(){
+    switch (type()) {
+        case Type::NegSmallInt:
+        case Type::NegBigInt:
+        case Type::NegSmallRational:
+        case Type::NegBigRational:
+            return true;
+        default:
+            return false;
+    }
+}
+
 uint8_t Tree::numberOfChildren(){
     switch (type()) {
         case Type::Div:

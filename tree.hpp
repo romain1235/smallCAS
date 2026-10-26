@@ -30,6 +30,7 @@ public:
     Type type() {return static_cast<Type>(block()[0]);}
     bool isNumber();
     bool isInteger();
+    bool isNeg();
     bool isIdenticalTo(Tree * other);
 
     void serialize(char * out, uint16_t size);//in serialize.cpp
@@ -38,6 +39,7 @@ public:
 
     Tree * project(TreeStack * stack);//in projection.cpp
     Tree * simpleReduction(TreeStack * stack);//in simple_reduction.cpp
+    Tree * beautify(TreeStack * stack);//in beautification.cpp
 private:
     void serialize(char * out, uint16_t size, uint16_t & p);//in serialize.cpp
 };
